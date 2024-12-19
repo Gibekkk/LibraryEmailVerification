@@ -1,58 +1,85 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BooksController;
+use App\Http\Controllers\CdsController;
+use App\Http\Controllers\FypsController;
+use App\Http\Controllers\GeneralController;
 use App\Http\Controllers\JournalsController;
-use App\Http\Controllers\CDController;
-use App\Http\Controllers\FinalYearProjectController;
-use App\Http\Controllers\NewspaperController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\LecturerController;
+use App\Http\Controllers\NewspapersController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\LibrarianManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
-Route::get('/dashboard', [DashboardController::class, "index"])->middleware(['auth', 'App\Http\Middleware\LevelCheck:admin,librarian'])->name('dashboard');
+// Middleware group untuk librarian
+Route::middleware(['auth', 'librarian'])->group(function () {
+    Route::resource('/books', BooksController::class);
+    Route::resource('/cds', CdsController::class);
+    Route::resource('/journals', JournalsController::class);
+    Route::resource('/newspapers', NewspapersController::class);
+    Route::resource('/fyps', FypsController::class);
+});
 
-Route::middleware(['auth', 'App\Http\Middleware\LevelCheck:admin,librarian'])->group(function () {
+// Middleware group untuk student
+Route::middleware(['auth', 'student'])->group(function () {
+    Route::resource('/studentBorrow', StudentController::class);
+    Route::post('/books/{id}/borrow', [StudentController::class, 'borrow'])->name('books.borrow');
+});
+
+// Middleware group untuk public/general
+Route::middleware(['auth', 'general'])->group(function () {
+    Route::resource('/generalBorrow', GeneralController::class);
+    Route::post('/books/{id}/borrow', [GeneralController::class, 'borrow'])->name('books.borrow');
+});
+
+// Middleware group untuk lecturer
+Route::middleware(['auth', 'lecturer'])->group(function () {
+    Route::resource('/lecturerBorrow', LecturerController::class);
+    Route::post('/lecturer/borrow/{type}/{id}', [LecturerController::class, 'borrow'])->name('borrow.item');
+});
+
+// Middleware group untuk admin
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('/approval', ApprovalController::class);
+    Route::resource('/librarianManagement', LibrarianManagementController::class);
+    Route::put('/books/{id}/approve', [BooksController::class, 'approve'])->name('books.approve');
+    Route::put('/cds/{id}/approve', [CdsController::class, 'approve'])->name('cds.approve');
+    Route::put('/journals/{id}/approve', [JournalsController::class, 'approve'])->name('journals.approve');
+    Route::put('/newspapers/{id}/approve', [NewspapersController::class, 'approve'])->name('newspapers.approve');
+    Route::put('/fyps/{id}/approve', [FypsController::class, 'approve'])->name('fyps.approve');
+});
+
+
+Route::get('/dashboard', function () {
+    return redirect()->route('approval.index');
+})->middleware(['auth', 'admin'])->name("dashboard");
+
+Route::get('/dashboard', function () {
+    return redirect()->route('books.index');
+})->middleware(['auth', 'librarian'])->name("dashboard");
+
+Route::get('/dashboard', function () {
+    return redirect()->route('lecturerBorrow.index');
+})->middleware(['auth', 'lecturer'])->name("dashboard");
+
+Route::get('/dashboard', function () {
+    return redirect()->route('studentBorrow.index');
+})->middleware(['auth', 'student'])->name("dashboard");
+
+Route::get('/dashboard', function () {
+    return redirect()->route('generalBorrow.index');
+})->middleware(['auth', 'general'])->name("dashboard");
+
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    Route::get('/books/{sort?}', [BooksController::class, 'index'])->name('books');
-    Route::get('/journals/{sort?}', [JournalsController::class, 'index'])->name('journals');
-    Route::get('/cds/{sort?}', [CDController::class, 'index'])->name('cds');
-    Route::get('/final_year_projects/{sort?}', [FinalYearProjectController::class, 'index'])->name('final_year_projects');
-    Route::get('/newspapers/{sort?}', [NewspaperController::class, 'index'])->name('newspapers');
 });
 
-Route::middleware(['auth', 'App\Http\Middleware\LevelCheck:admin'])->group(function () {
-    Route::get('/librarians', [AdminController::class, 'librarians'])->name('librarians');
-    Route::post('/removeLibrarian', [AdminController::class, 'removeLibrarian'])->name('removeLibrarian');
-    Route::get('/addLibrarian', [AdminController::class, 'addLibrarian'])->name('addLibrarian');
-    Route::post('/addLibrarian', [AdminController::class, 'addLibrarianProcess'])->name('addLibrarianProcess');
-    Route::get('/requests/{collectionType}', [AdminController::class, 'requests'])->name('requests');
-    Route::post('/approveRequest/{collectionType}', [AdminController::class, 'approveRequest'])->name('approveRequest');
-    Route::post('/declineRequest/{collectionType}', [AdminController::class, 'declineRequest'])->name('declineRequest');
-});
-
-Route::middleware(['auth', 'App\Http\Middleware\LevelCheck:librarian'])->group(function () {
-    Route::get('/display', function () {
-        redirect('books');
-    })->name('display');
-    Route::get('/add/books', [BooksController::class, 'addBook'])->name('books.add');
-    Route::post('/add/books', [BooksController::class, 'addBookProcess'])->name('books.addProcess');
-    Route::get('/add/journals', [JournalsController::class, 'addJournal'])->name('journals.add');
-    Route::post('/add/journals', [JournalsController::class, 'addJournalProcess'])->name('journals.addProcess');
-    Route::get('/add/cds', [CDController::class, 'addCD'])->name('cds.add');
-    Route::post('/add/cds', [CDController::class, 'addCDProcess'])->name('cds.addProcess');
-    Route::get('/add/newspapers', [NewspaperController::class, 'addNewspaper'])->name('newspapers.add');
-    Route::post('/add/newspapers', [NewspaperController::class, 'addNewspaperProcess'])->name('newspapers.addProcess');
-    Route::get('/add/final_year_projects', [FinalYearProjectController::class, 'addFyp'])->name('final_year_projects.add');
-    Route::post('/add/final_year_projects', [FinalYearProjectController::class, 'addFypProcess'])->name('final_year_projects.addProcess');
-});
-
-
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

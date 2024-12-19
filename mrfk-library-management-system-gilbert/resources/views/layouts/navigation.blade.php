@@ -15,21 +15,6 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @if(Route::has('display'))
-                    <x-nav-link :href="route('books')" :active="request()->routeIs('books', 'journals','cds', 'final_year_projects', 'newspapers')">
-                        {{ __('Library Data') }}
-                    </x-nav-link>
-                    @endif
-                    @if(Route::has('librarians') && Auth::user()->level == "admin")
-                    <x-nav-link :href="route('librarians')" :active="request()->routeIs('librarians')">
-                        {{ __('Librarians') }}
-                    </x-nav-link>
-                    @endif
-                    @if(Route::has('requests') && Auth::user()->level == "admin")
-                    <x-nav-link :href="'/requests/book'" :active="request()->routeIs('requests')">
-                        {{ __('Requests') }}
-                    </x-nav-link>
-                    @endif
                 </div>
             </div>
 

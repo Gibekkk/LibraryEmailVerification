@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,8 +14,6 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $table = 'users';
-
     /**
      * The attributes that are mass assignable.
      *
@@ -21,11 +21,10 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $fillable = [
         'name',
-        'email',
         'username',
+        'email',
         'password',
-        'last_update',
-        'level',
+        'level'
     ];
 
     /**
@@ -36,7 +35,6 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
-        'isDeleted',
     ];
 
     /**
@@ -51,4 +49,11 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    public function borrowBooks()
+    {
+        return $this->belongsToMany(Books::class, 'borrow', 'user_id', 'book_id')
+                    ->withPivot('days_left', 'created_at', 'updated_at');
+    }
+    
 }

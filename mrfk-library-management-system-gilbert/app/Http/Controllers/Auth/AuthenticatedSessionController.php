@@ -8,7 +8,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -26,18 +25,22 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+
         $request->session()->regenerate();
-        if (!Auth::user()->isDeleted) {
-            return redirect()->intended(route('dashboard', absolute: false));
-        }
-        Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
+        if($request->user()->level === 'admin'){
+            return redirect()->route('approval.index');
+        };
 
-        $request->session()->regenerateToken();
-        throw ValidationException::withMessages([
-            'username' => trans('auth.failed'),
-        ]);
+        if($request->user()->level === 'librarian'){
+            return redirect()->route('books.index');
+        };
+
+        if($request->user()->level === 'lecturer'){
+            return redirect()->route('lecturerBorrow.index');
+        };
+
+        return redirect()->intended(route('studentBorrow.index'));
     }
 
     /**
@@ -51,6 +54,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect('/');
     }
 }

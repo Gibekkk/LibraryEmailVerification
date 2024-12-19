@@ -16,22 +16,39 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-            'name' => 'Test Admin',
-            'username' => 'admin',
-            "level" => "admin"
+            'name' => 'Admin',
+            'username' => 'Admin',
+            'email' => 'admin@gmail.com',
+            'password' => '12345678',
+            'level' => 'admin',
         ]);
         User::factory()->create([
-            'name' => 'Test Librarian',
-            'username' => 'librarian',
-            "level" => "librarian"
+            'name' => 'Librarian',
+            'username' => 'Librarian',
+            'email' => 'librarian@gmail.com',
+            'password' => '12345678',
+            'level' => 'librarian',
         ]);
-
-        $this->call([
-            BooksSeeder::class,
-            JournalsSeeder::class,
-            CDSeeder::class,
-            NewspaperSeeder::class,
-            FinalYearProjectSeeder::class,
+        User::factory()->create([
+            'name' => 'Student',
+            'username' => 'Student',
+            'email' => 'student@gmail.com',
+            'password' => '12345678',
+            'level' => 'student',
+        ]);
+        User::factory()->create([
+            'name' => 'Lecturer',
+            'username' => 'Lecturer',
+            'email' => 'lecturer@gmail.com',
+            'password' => '12345678',
+            'level' => 'lecturer',
+        ]);
+        User::factory()->create([
+            'name' => 'General',
+            'username' => 'General',
+            'email' => 'general@gmail.com',
+            'password' => '12345678',
+            'level' => 'general',
         ]);
     }
 }
